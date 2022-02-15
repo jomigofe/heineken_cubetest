@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="content-language" content="en-EN" />
+
+    <title>JEELIZ FACEFILTER: THREE.JS GLTF FULLSCREEN DEMO</title>
+
+    <!-- INCLUDE JEELIZ FACEFILTER SCRIPT -->
+    <script src="dist/jeelizFaceFilter.js"></script>
+
+    <!-- INCLUDE THREE.JS -->
+    <script src="libs/three/v112/three.js"></script>
+    <script src="libs/three/v112/GLTFLoader.js"></script>
+
+    <!-- INCLUDE JEELIZRESIZER -->
+    <script src="helpers/JeelizResizer.js"></script>
+
+    <!-- INCLUDE JEELIZ THREE.JS HELPER -->
+    <script src="helpers/JeelizThreeHelper.js"></script>
+
+    <!-- INCLUDE DEMO SCRIPT -->
+    <script src="main.js"></script>
+
+    <!-- INCLUDE FORK ME ON GITHUB BANNER -->
+    <script src="appearance/widget.js"></script>
+
+    <link
+      rel="stylesheet"
+      href="appearance/styleFullScreen.css"
+      type="text/css"
+    />
+
+    <script type="x-shader/x-vertex" id="vertexshader">
+      #ifdef GL_ES
+      precision highp float;
+      #endif
+
+      varying vec2 vUv;
+      varying vec3 norm;
+
+      void main()
+      {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+        norm = normal;
+      }
+    </script>
+    <script type="x-shader/x-fragment" id="fragmentshader">
+      #ifdef GL_ES
+      precision highp float;
+      #endif
+
+      varying vec2 vUv;
+      varying vec3 norm;
+      uniform sampler2D texture;
+
+      void main()
+      {
+        // use the xy normal to look up the texture position
+        // and convert the [-1, 1] range to [0, 1]
+        vec2 lookup = (norm.xy + 1.0) / 2.0;
+
+        // generate an attenuation factor to darken the back
+        float attenuation = min(1.0, norm.z + 1.0);
+
+        // flip the x component to mirror the image
+        lookup.x = 1.0 - lookup.x;
+
+        // look up and output the attenuated texture color
+        vec3 color = texture2D(texture, lookup).rgb;
+        gl_FragColor = vec4(color * attenuation, 1.0);
+      }
+    </script>
+  </head>
+
+  <body onload="main()">
+    <canvas width="600" height="600" id="jeeFaceFilterCanvas"></canvas>
+    <video id="webcam" autoplay></video>
+  </body>
+</html>
